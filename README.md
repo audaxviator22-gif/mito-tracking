@@ -4,15 +4,15 @@
 
 Python pipeline for detecting and tracking mitochondria in fluorescence microscopy videos, with a machine-learning–based track association model.
 
-# 1 - Entering the folder
+# Entering the folder
 cd mito-tracking
 
-# 2 - Creating the environment
+# Creating the environment
 conda env create -f environment.yml
 conda activate mito-tracking
 
-# 3 - Instaling the package
+# Instaling the package
 pip install -e .
 
-# 4 - Running the pipeline
+# Running the pipeline
 python scripts/reproduce_paper.py
