@@ -1,0 +1,133 @@
+
+# Mitochondria Tracking — Default Configuration
+
+# This file centralizes all tunable parameters.
+
+# Physical / acquisition parameters
+  
+scale:
+  # Spatial calibration ( how many camera pixels correspond to one micrometer).
+  # Determinethis from microscope's objective and camera pixel size.
+  # Temporal calibration: frames per second of the source video.
+  # Used to convert displacements between frames to velocities in µm/s.
+  fps: 30.0
+
+# Detection parameters (classical CV pipeline)
+
+detection:
+  # Minimum area (in µm²) for an object to be considered mitochondria.
+  # Filters out noise, debris, and sub-resolution features.
+  min_area_um2: 0.2
+
+  # Maximum area (in µm²), added to reject large clumps or merged mitochondria.
+  max_area_um2: 50.0
+
+  # Maximum circularity (0–1). A perfect circle equals 1.0.
+  # Mitochondria are elongated, so anything above that is considered to be an artifact (a round blob of autofluorescencent debris for example).
+  max_circularity: 0.8
+
+  # Minimum mean grayscale intensity (0–255) inside the contour. Rejects dim, out-of-focus objects.
+  min_intensity: 30.0
+
+  # Minimum detector confidence (used when a trained detection model is loaded). Values below this are discarded before tracking.
+  min_confidence: 0.6
+
+# Tracking parameters (association + track management)
+
+tracking:
+  # How many frames a track can be "lost" before being closed.
+  # A larger value tolerates brief detection fluctuations and failures.
+  # Set to 0 to require strictly consecutive-frame detections.
+  max_gap_frames: 5
+
+  # Minimum number of frames a track must span to be kept.
+  # Filters out spurious single-frame detections.
+  min_track_length: 10
+
+  # Confidence threshold (0–1) for the association model.
+  # Lower means more associations (risk of linking separate objects), and higher - stricter (risk of fragmenting a single track).
+  # Typical range: 0.4–0.7.
+  association_threshold: 0.5
+
+  # Maximum distance (in µm) between a detection and its predicted location in the next frame. Used as a hard cutoff during association.
+  max_distance_um: 2.0
+
+  # Maximum allowed relative area change between consecutive detections.
+  # 0.5 = area may change by up to 50% frame-to-frame.
+  max_area_change: 0.5
+
+# Feature extraction parameters
+
+features:
+  # Reference distance (in µm) used to normalize position_distance to [0, 1].
+  # Larger means distances matter less; smaller - distances matter more.
+  reference_distance_um: 5.0
+
+  # Aspect ratio, below which a detection is considered "round".
+  # Used in shape-based confidence scoring.
+  round_aspect_ratio: 1.5
+
+  # Intensity threshold above which a detection is considered "bright".
+  # Used in intensity-based confidence scoring.
+  bright_intensity: 50.0
+
+# Training parameters
+
+training:
+  # Random seed for reproducibility.
+  seed: 42
+
+  # Fraction of examples held out for validation.
+  test_size: 0.2
+
+  # Random Forest hyperparameters.
+  rf_n_estimators: 100
+  rf_max_depth: 10
+  rf_class_weight: balanced
+
+  # Negative-example mining: how many negatives per positive.
+  # 1.0 = balanced dataset; 2.0 = twice as many negatives as positives.
+  negative_ratio: 1.0
+
+  # Maximum number of negative examples to mine (caps training time).
+  max_negatives: 5000
+
+# Visualization parameters
+
+visualization:
+  # Number of points to keep in the trail drawn behind a track during video rendering.
+  trail_length: 30
+
+  # DPI for saved static figures (PNG).
+  figure_dpi: 300
+
+  # Figure size for trajectory plots.
+  trajectory_figsize: [12, 10]
+
+  # Figure size for velocity distribution plots.
+  velocity_figsize: [14, 6]
+
+  # Figure size for directionality plots.
+  directionality_figsize: [14, 10]
+
+
+# Paths (relative to the repository root by default)
+
+# These can be overridden from the command line, e.g.:
+#   python scripts/track_folder.py --input /mnt/data --output /mnt/results
+
+paths:
+  # Directory containing input videos.
+  data_dir: data
+
+  # Directory where results, annotations, and figures arestored.
+  output_dir: outputs
+
+  # Directory where trained models are saved.
+  model_dir: models
+
+  # Directory where small example videos live.
+  sample_data_dir: data/sample
+
+  # Filename (relative to model_dir) of the trained tracking model.
+  tracking_model: tracker.pkl
